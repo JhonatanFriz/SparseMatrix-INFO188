@@ -54,7 +54,8 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < n; ++i) {
         vector[i] = (double)rand() / RAND_MAX;
     }
-
+    size_t tamanoMatrizBytes = sizeof(EntradaMatrizDispersa) * matriz.size();
+    std::cout << "Tamaño de la matriz: " << tamanoMatrizBytes/(1024.0 * 1024.0) << " MB" << std::endl;
     // Medir el tiempo de ejecución
     clock_t inicio = clock();
 

@@ -32,7 +32,6 @@ __global__ void calcularGPU(casilla* v, float* m, float* r, int tv, int n){
     }
 }
 
-
 int main(int argc, char* argv[]){
     if (argc != 6) {
         cout << "Error. Debe ejecutarse como ./prog <n> <d> <m> <s> <nt>" << endl;
@@ -84,6 +83,9 @@ int main(int argc, char* argv[]){
         cout << "Valor: " << matriz[i].real << " Posicion: " << matriz[i].entero << endl;
     }*/
     
+    int total_size = limite * sizeof(casilla);
+    cout << "Tamano de la matriz dispersa abreviada: " << total_size/(1024.0 * 1024.0) << " [MB]" << endl;
+
     if (m==0){
         double tiempoInicial_CPU = omp_get_wtime();
         calcularCPU(matriz, multiplicador, resultado, limite, n, nt);
@@ -96,7 +98,6 @@ int main(int argc, char* argv[]){
         float* mul = nullptr;
         float* res = nullptr;
         casilla* mat = nullptr;
-        int total_size = limite * sizeof(casilla);
 
         cudaMalloc(&mul, n * sizeof(float));
         cudaMalloc(&res, n * sizeof(float));
@@ -117,9 +118,6 @@ int main(int argc, char* argv[]){
         cudaFree(mat);
         tiempoGPU = tiempoFinal_GPU - tiempoInicial_GPU;
         cout << "Tiempo GPU: " << tiempoGPU << " [s]\n";
-        // cudaFree(mul);
-        // cudaFree(res);
-        // cudaFree(mat);
     }
 
     /*cout << "Vector resultado generado:\n";
