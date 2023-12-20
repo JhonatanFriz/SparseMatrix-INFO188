@@ -6,7 +6,6 @@
 #include <tuple>
 #include <algorithm>
 #include <cmath>
-#include <cmath>
 
 using namespace std;
 
@@ -15,11 +14,9 @@ struct casilla {
     float real;
 };
 
-void calcularCPU(casilla* v, float* m, float* r, int tv, int n, int nt){//(vector<tuple<float,int>> v, float* m, float* r, int n, int nt){
+void calcularCPU(casilla* v, float* m, float* r, int tv, int n, int nt){
     #pragma omp parallel for num_threads(nt) shared(v,m,r)
     for (int i=0; i<tv; i++){
-        //float valor = get<0>(w);
-        //int posicion = get<1>(w);
         int fila = (v[i].entero) / n;
         int columna = (v[i].entero) % n;
         r[fila] = r[fila] + (v[i].real)*m[columna];
@@ -31,8 +28,6 @@ __global__ void calcularGPU(casilla* v, float* m, float* r, int tv, int n){
     if (i < tv){
         int fila = (v[i].entero) / n;
         int columna = (v[i].entero) % n;
-        //printf("Agregando: %d\n", (v[i].real)*m[columna]);
-        // r[fila] = r[fila] + (v[i].real)*m[columna];
         atomicAdd(&r[fila], (v[i].real) * m[columna]);
     }
 }
@@ -61,8 +56,7 @@ int main(int argc, char* argv[]){
         multiplicador[i] = 1.0 + (rand() * 99.0 / (float)RAND_MAX);
         resultado[i] = 0.0;
     }
-    //double tiempoA, tiempoB, tiempoC;
-    //tiempoA = omp_get_wtime();
+
     while (contador < limite){
         int valeat = rand() % (n * n);
         int buscador = 0;
@@ -78,9 +72,6 @@ int main(int argc, char* argv[]){
             contador++;
         }
     }
-    /*tiempoB = omp_get_wtime();
-    tiempoC = (tiempoB - tiempoA);
-    cout << "Tiempo de formacion de matriz: "<< tiempoC << " [s]\n";*/
     
     /*cout << "Vector multiplicador generado:\n";
     for (int i = 0; i < n; ++i) {
@@ -102,7 +93,6 @@ int main(int argc, char* argv[]){
     }
     else{
         double tiempoInicial_GPU, tiempoFinal_GPU, tiempoGPU;
-        tiempoInicial_GPU = omp_get_wtime();
         float* mul = nullptr;
         float* res = nullptr;
         casilla* mat = nullptr;
@@ -116,6 +106,7 @@ int main(int argc, char* argv[]){
         cudaMemcpy(mat, matriz, total_size, cudaMemcpyHostToDevice);
 
         int GRID_SIZE = (limite + 127) / 128;
+        tiempoInicial_GPU = omp_get_wtime();
         calcularGPU<<<GRID_SIZE, 128>>>(mat, mul, res, limite, n);
         cudaDeviceSynchronize();
         cudaMemcpy(resultado, res, n * sizeof(float), cudaMemcpyDeviceToHost);
@@ -126,26 +117,6 @@ int main(int argc, char* argv[]){
         cudaFree(mat);
         tiempoGPU = tiempoFinal_GPU - tiempoInicial_GPU;
         cout << "Tiempo GPU: " << tiempoGPU << " [s]\n";
-        // double tiempoInicial_GPU, tiempoFinal_GPU, tiempoGPU;
-        // tiempoInicial_GPU = omp_get_wtime();
-        // int* mul = 0;
-        // int* res = 0;
-        // casilla* mat = 0;
-        // int total_size = (limite) * sizeof(casilla);
-        // cudaMalloc(&mul,sizeof(multiplicador));
-        // cudaMalloc(&res,sizeof(resultado));
-        // cudaMalloc(&mat,total_size);
-        // cudaMemcpy(mul,multiplicador,sizeof(multiplicador),cudaMemcpyHostToDevice);
-        // cudaMemcpy(res,resultado,sizeof(resultado),cudaMemcpyHostToDevice);
-        // cudaMemcpy(mat,matriz,total_size,cudaMemcpyHostToDevice);
-        // dim3 GRID_SIZE = ((limite+127)/128);
-        // dim3 BLOCK_SIZE = (128);
-        // calcularGPU<<<GRID_SIZE,BLOCK_SIZE>>>(matriz, multiplicador, resultado, limite, n);
-        // cudaMemcpy(res,resultado,sizeof(resultado),cudaMemcpyDeviceToHost);
-        // cudaDeviceSynchronize();
-        // tiempoFinal_GPU= omp_get_wtime();
-        // tiempoGPU = tiempoFinal_GPU - tiempoInicial_GPU;
-        // cout << "Tiempo GPU: "<< tiempoGPU << " [s]\n";
         // cudaFree(mul);
         // cudaFree(res);
         // cudaFree(mat);
